@@ -1,20 +1,23 @@
 package com.volokh.danylo.visibility_utils.calculator;
 
+package com.camerasideas.collagemaker.video.calculator;
+
 import android.widget.AbsListView;
 
-import com.volokh.danylo.visibility_utils.scroll_utils.ItemsPositionGetter;
-import com.volokh.danylo.visibility_utils.scroll_utils.ScrollDirectionDetector;
-import com.volokh.danylo.visibility_utils.utils.Config;
-import com.volokh.danylo.visibility_utils.utils.Logger;
+import com.camerasideas.collagemaker.BuildConfig;
+import com.camerasideas.collagemaker.video.scroll_utils.ItemsPositionGetter;
+import com.camerasideas.collagemaker.video.scroll_utils.ScrollDirectionDetector;
+import com.camerasideas.collagemaker.video.utils.Logger;
+
 
 /**
  * This class encapsulates some basic logic of Visibility calculator.
- * In onScroll event it calculates Scroll direction using {@link com.volokh.danylo.visibility_utils.scroll_utils.ScrollDirectionDetector}
+ * In onScroll event it calculates Scroll direction using {@link ScrollDirectionDetector}
  * and then calls appropriate methods
  */
 public abstract class BaseItemsVisibilityCalculator implements ListItemsVisibilityCalculator, ScrollDirectionDetector.OnDetectScrollListener{
 
-    private static final boolean SHOW_LOGS = Config.SHOW_LOGS;
+    private static final boolean SHOW_LOGS = BuildConfig.DEBUG;
     private static final String TAG = BaseItemsVisibilityCalculator.class.getSimpleName();
     private final ScrollDirectionDetector mScrollDirectionDetector = new ScrollDirectionDetector(this);
 
@@ -28,14 +31,9 @@ public abstract class BaseItemsVisibilityCalculator implements ListItemsVisibili
 
         switch (scrollState) {
             case AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL:
-                onStateTouchScroll(itemsPositionGetter);
-                break;
             case AbsListView.OnScrollListener.SCROLL_STATE_FLING:
-                onStateTouchScroll(itemsPositionGetter);
-                break;
-
             case AbsListView.OnScrollListener.SCROLL_STATE_IDLE:
-                if (SHOW_LOGS) Logger.v(TAG, "onScroll, SCROLL_STATE_IDLE. ignoring");
+                onStateTouchScroll(itemsPositionGetter);//统一在TouchScroll中判断焦点条目
                 break;
         }
     }
@@ -57,3 +55,4 @@ public abstract class BaseItemsVisibilityCalculator implements ListItemsVisibili
     }
 
 }
+
