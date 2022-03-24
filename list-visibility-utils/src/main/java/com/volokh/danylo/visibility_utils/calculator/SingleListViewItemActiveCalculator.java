@@ -1,13 +1,14 @@
 package com.volokh.danylo.visibility_utils.calculator;
 
+
 import android.view.View;
 
-import com.volokh.danylo.visibility_utils.items.ListItem;
-import com.volokh.danylo.visibility_utils.items.ListItemData;
-import com.volokh.danylo.visibility_utils.scroll_utils.ItemsPositionGetter;
-import com.volokh.danylo.visibility_utils.scroll_utils.ScrollDirectionDetector;
-import com.volokh.danylo.visibility_utils.utils.Config;
-import com.volokh.danylo.visibility_utils.utils.Logger;
+import com.camerasideas.collagemaker.video.Config;
+import com.camerasideas.collagemaker.video.items.ListItem;
+import com.camerasideas.collagemaker.video.items.ListItemData;
+import com.camerasideas.collagemaker.video.scroll_utils.ItemsPositionGetter;
+import com.camerasideas.collagemaker.video.scroll_utils.ScrollDirectionDetector;
+import com.camerasideas.collagemaker.video.utils.Logger;
 
 import java.util.List;
 
@@ -201,6 +202,9 @@ public class SingleListViewItemActiveCalculator extends BaseItemsVisibilityCalcu
         for(int indexOfCurrentItem = itemsPositionGetter.getFirstVisiblePosition(), indexOfCurrentView = itemsPositionGetter.indexOfChild(outMostVisibleItem.getView())
                 ; indexOfCurrentView < itemsPositionGetter.getChildCount() // iterating via listView Items
                 ; indexOfCurrentItem++, indexOfCurrentView++){
+            if (indexOfCurrentItem < 0 || indexOfCurrentItem > mListItems.size() - 1 || indexOfCurrentView < 0){
+                continue;
+            }
 
             if(SHOW_LOGS) Logger.v(TAG, "topToBottomMostVisibleItem, indexOfCurrentView " + indexOfCurrentView);
             ListItem listItem = mListItems.get(indexOfCurrentItem);
@@ -236,6 +240,9 @@ public class SingleListViewItemActiveCalculator extends BaseItemsVisibilityCalcu
         for(int indexOfCurrentItem = itemsPositionGetter.getLastVisiblePosition(), indexOfCurrentView = itemsPositionGetter.indexOfChild(outMostVisibleItem.getView())
                 ; indexOfCurrentView >= 0 // iterating via listView Items
                 ; indexOfCurrentItem--, indexOfCurrentView--){
+            if (indexOfCurrentItem < 0 || indexOfCurrentItem > mListItems.size() - 1){
+                continue;
+            }
 
             if(SHOW_LOGS) Logger.v(TAG, "bottomToTopMostVisibleItem, indexOfCurrentView " + indexOfCurrentView);
             ListItem listItem = mListItems.get(indexOfCurrentItem);
@@ -339,7 +346,8 @@ public class SingleListViewItemActiveCalculator extends BaseItemsVisibilityCalcu
     @Override
     protected void onStateFling(ItemsPositionGetter itemsPositionGetter) {
         ListItemData currentItemData = mCurrentItem;
-        mCallback.deactivateCurrentItem(mListItems.get(currentItemData.getIndex()), currentItemData.getView(), currentItemData.getIndex());
+        /* fix bug: 视频引导拖拽松手后不会自动播放(TouchScroll时改变了mCurrentItem, 松手后这里暂停了播放, StateIdle时对比最大可见Item和mCurrentItem一致，没有发生改变，所以没有调用setActive) */
+//        mCallback.deactivateCurrentItem(mListItems.get(currentItemData.getIndex()), currentItemData.getView(), currentItemData.getIndex());
     }
 
     @Override
@@ -353,6 +361,14 @@ public class SingleListViewItemActiveCalculator extends BaseItemsVisibilityCalcu
 
         int itemPosition = newCurrentItem.getIndex();
         View view = newCurrentItem.getView();
+        if (itemPosition < 0 || itemPosition > mListItems.size() - 1) {
+            return;
+        }
+        ListItemData currentItemData = mCurrentItem;
+        mCallback.deactivateCurrentItem(
+                mListItems.get(currentItemData.getIndex())
+                , currentItemData.getView()
+                , currentItemData.getIndex());
 
         mCurrentItem.fillWithData(itemPosition, view);
 
@@ -362,3 +378,4 @@ public class SingleListViewItemActiveCalculator extends BaseItemsVisibilityCalcu
                 , itemPosition);
     }
 }
+
